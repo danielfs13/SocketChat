@@ -27,6 +27,7 @@ io.on("connection", (socket) => {
         "chat message",
         data + " acabou de entrar, online: " + usuarios.length
       );
+      io.emit("user list", userData.nickname);
     }
   });
 
@@ -38,11 +39,16 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("user typing");
   });
 
+  socket.on("user list", (userData) => {
+    io.emit("user list", userData.nickname);
+  });
+
   socket.on("disconnect", () => {
     const user = usuarios.find((x) => x.id === socket.id);
     console.log(user);
     usuarios.splice(usuarios.indexOf(user), 1);
     console.log(usuarios);
+    io.emit("userlist disc", usuarios);
     if (user && user.nickname) {
       io.emit(
         "chat message",

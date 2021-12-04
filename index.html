@@ -67,6 +67,10 @@
       #chatContainer {
         display: none;
       }
+
+      #usersList {
+        float: right;
+      }
     </style>
   </head>
 
@@ -156,6 +160,11 @@
         var onlineUser = document.createElement("li");
         onlineUser.textContent = nickname;
         usersList.appendChild(onlineUser);
+        socket.emit(usersList);
+      });
+
+      socket.on("userlist disc", function (nickname) {
+        usersList.removeChild(onlineUser);
       });
     </script>
   </body>
