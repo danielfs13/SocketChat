@@ -58,23 +58,72 @@
       #messages > li:nth-child(odd) {
         background: #efefef;
       }
+
+      #nickContainer {
+        float: left;
+        border: 1px #000 solid;
+      }
+
+      #chatContainer {
+        display: none;
+      }
     </style>
   </head>
 
   <body>
-    <ul id="messages"></ul>
-    <p id="userTyping"></p>
-    <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
+    <div id="chatContainer">
+      <ul id="messages"></ul>
+
+      <form id="form" action="">
+        <p id="userTyping"></p>
+        <br />
+        <input id="input" autocomplete="off" /><button>Send</button>
+      </form>
+    </div>
+
+    <div id="usersContainer">
+      <ul id="usersList"></ul>
+    </div>
+
+    <div id="nickContainer">
+      <p>Escolha seu nick</p>
+      <p id="nickError"></p>
+
+      <form id="setNick">
+        <input size="35" id="nickInput" />
+        <button>Send</button>
+      </form>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+      var nickname = "";
       var socket = io();
 
       var messages = document.getElementById("messages");
       var form = document.getElementById("form");
       var input = document.getElementById("input");
+
+      var nickForm = document.getElementById("setNick");
+      var nickError = document.getElementById("nickError");
+      var nickBox = document.getElementById("nickInput");
+      var nickContainer = document.getElementById("nickContainer");
+      var chatContainer = document.getElementById("chatContainer");
+
+      var usersList = document.getElementById("usersList");
+
+      nickForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        socket.emit("new user", nickBox.value, function (data) {
+          if (data) {
+            nickname = nickBox.value;
+            nickContainer.style.display = "none";
+            chatContainer.style.display = "block";
+          } else {
+            nickError.innerHTML = "Este nick já existe.";
+          }
+        });
+      });
 
       input.addEventListener("keyup", function (e) {
         socket.emit("user typing");
@@ -83,10 +132,11 @@
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         if (input.value) {
-          socket.emit("chat message", input.value);
+          socket.emit("chat message", nickname + ": " + input.value);
           input.value = "";
         }
       });
+
       socket.on("chat message", function (msg) {
         var item = document.createElement("li");
         item.textContent = msg;
@@ -100,6 +150,12 @@
         setTimeout(function () {
           document.getElementById("userTyping").textContent = "";
         }, 3000);
+      });
+
+      socket.on("user list", function (nickname) {
+        var onlineUser = document.createElement("li");
+        onlineUser.textContent = nickname;
+        usersList.appendChild(onlineUser);
       });
     </script>
   </body>
