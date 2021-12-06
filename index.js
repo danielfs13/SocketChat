@@ -27,12 +27,12 @@ io.on("connection", (socket) => {
         "chat message",
         data + " acabou de entrar, online: " + usuarios.length
       );
-      io.emit("user list", userData.nickname);
+      io.emit("user list", usuarios);
     }
   });
 
   socket.on("chat message", (msg) => {
-    io.emit("chat message", msg);
+    socket.broadcast.emit("chat message", msg);
   });
 
   socket.on("user typing", () => {
